@@ -1,25 +1,28 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import RightSidebar from '../components/RightSidebar';
 import {
     LayoutGrid, Calendar, Users, BarChart2, BookOpen,
     Settings, LogOut, Search, Bell, ChevronRight,
     Trophy, Briefcase, Zap, Clock, CheckCircle, AlertTriangle, XCircle, ArrowRight,
-    Target, Timer, Activity
+    Target, Timer, Activity, ChevronLeft
 } from 'lucide-react';
 
 const CompetitivePage = () => {
     const navigate = useNavigate();
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
     const NavItem = ({ icon: Icon, label, active, onClick }) => (
         <button
             onClick={onClick}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group ${active
+            className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center px-2' : 'gap-3 px-3'} py-2.5 rounded-xl transition-all duration-200 group ${active
                 ? 'bg-white/10 text-white font-medium shadow-sm'
                 : 'text-gray-400 hover:text-white hover:bg-white/5'
                 }`}
+            title={isSidebarCollapsed ? label : ''}
         >
             <Icon className={`w-4 h-4 ${active ? 'text-white' : 'text-gray-500 group-hover:text-white'}`} />
-            <span className="text-sm tracking-wide">{label}</span>
+            {!isSidebarCollapsed && <span className="text-sm tracking-wide">{label}</span>}
         </button>
     );
 
@@ -27,26 +30,32 @@ const CompetitivePage = () => {
         <div className="flex h-screen w-full bg-[#FAF9F4] p-3 gap-3 font-sans overflow-hidden text-[#1F1F1F]">
 
             {/* Sidebar - Compact (Global) */}
-            <aside className="w-56 bg-[#1F1F1F] rounded-[1.5rem] p-4 flex flex-col hidden md:flex shrink-0 shadow-2xl shadow-black/5 z-20">
-                <div className="flex items-center gap-3 mb-8 px-2 pt-1">
-                    <div className="w-7 h-7 rounded-full bg-white flex items-center justify-center text-[#1F1F1F] font-bold text-lg shadow-md">M</div>
-                    <span className="font-bold text-base tracking-tight text-white">MasteryLoop</span>
+            <aside className={`${isSidebarCollapsed ? 'w-20' : 'w-56'} bg-[#1F1F1F] rounded-[1.5rem] p-4 flex flex-col hidden md:flex shrink-0 shadow-2xl shadow-black/5 z-20 transition-all duration-300 relative`}>
+                <button
+                    onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                    className="absolute -right-3 top-10 w-6 h-6 bg-[#1F1F1F] rounded-full shadow-lg border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/5 z-50 transition-colors"
+                >
+                    {isSidebarCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+                </button>
+
+                <div className={`flex items-center gap-3 mb-8 px-2 pt-1 ${isSidebarCollapsed ? 'justify-center' : ''}`}>
+                    <div className="w-7 h-7 rounded-full bg-white flex items-center justify-center text-[#1F1F1F] font-bold text-lg shadow-md shrink-0">M</div>
+                    {!isSidebarCollapsed && <span className="font-bold text-base tracking-tight text-white whitespace-nowrap overflow-hidden">MasteryLoop</span>}
                 </div>
                 <div className="flex-1 flex flex-col gap-6 overflow-y-auto scrollbar-hide">
                     <section>
-                        <div className="text-[10px] font-extrabold text-gray-600 uppercase tracking-widest mb-2 px-3">General</div>
+                        {!isSidebarCollapsed && <div className="text-[10px] font-extrabold text-gray-600 uppercase tracking-widest mb-2 px-3 whitespace-nowrap">General</div>}
                         <nav className="space-y-0.5">
                             <NavItem icon={LayoutGrid} label="Dashboard" onClick={() => navigate('/')} />
                             <NavItem icon={BookOpen} label="Academic" onClick={() => navigate('/academic')} />
                             <NavItem icon={Trophy} label="Competitive" active />
-                            <NavItem icon={Calendar} label="Schedule" />
-                            <NavItem icon={Users} label="Community" />
-                            <NavItem icon={BarChart2} label="Analytics" />
-                            <NavItem icon={BookOpen} label="Resources" />
+                            <NavItem icon={Briefcase} label="Career" onClick={() => navigate('/career')} />
+                            <NavItem icon={BarChart2} label="Analytics" onClick={() => navigate('/analytics')} />
+                            <NavItem icon={Calendar} label="Schedule" onClick={() => navigate('/schedule')} />
                         </nav>
                     </section>
                     <section>
-                        <div className="text-[10px] font-extrabold text-gray-600 uppercase tracking-widest mb-2 px-3">Tools</div>
+                        {!isSidebarCollapsed && <div className="text-[10px] font-extrabold text-gray-600 uppercase tracking-widest mb-2 px-3 whitespace-nowrap">Tools</div>}
                         <nav className="space-y-0.5">
                             <NavItem icon={Settings} label="Search" />
                             <NavItem icon={LogOut} label="Log out" />
@@ -54,12 +63,14 @@ const CompetitivePage = () => {
                     </section>
                 </div>
                 <div className="mt-auto pt-4 border-t border-white/5">
-                    <div className="bg-white/5 p-2 rounded-xl flex items-center gap-3 hover:bg-white/10 transition-colors cursor-pointer">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 shadow-inner" />
-                        <div>
-                            <div className="text-sm font-bold text-white">Guest User</div>
-                            <div className="text-[10px] text-gray-400 font-medium">Student Plan</div>
-                        </div>
+                    <div className={`bg-white/5 p-2 rounded-xl flex items-center gap-3 hover:bg-white/10 transition-colors cursor-pointer ${isSidebarCollapsed ? 'justify-center' : ''}`}>
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 shadow-inner shrink-0" />
+                        {!isSidebarCollapsed && (
+                            <div className="overflow-hidden">
+                                <div className="text-sm font-bold text-white whitespace-nowrap">Guest User</div>
+                                <div className="text-[10px] text-gray-400 font-medium whitespace-nowrap">Student Plan</div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </aside>
@@ -68,8 +79,9 @@ const CompetitivePage = () => {
             <main className="flex-1 flex flex-col min-w-0 mx-2 h-full relative">
 
                 {/* Top Header - Floating & Transparent (Navbar Fix Applied) */}
-                <header className="absolute top-0 left-0 right-0 z-50 h-14 flex items-center justify-between shrink-0 pt-2 pointer-events-none">
-                    <div className="pointer-events-auto flex items-center gap-2 flex-1 bg-white rounded-full px-4 py-2 shadow-sm border border-black/5 max-w-lg transition-all hover:shadow-md h-10">
+                {/* Top Header - Floating & Transparent (Navbar Fix Applied) */}
+                <header className="absolute top-0 left-0 right-0 z-50 h-14 flex items-center justify-end shrink-0 pt-2 pointer-events-none px-4 gap-3">
+                    <div className="pointer-events-auto flex items-center gap-2 bg-white rounded-full px-4 py-2 shadow-sm border border-black/5 w-64 transition-all hover:shadow-md h-10">
                         <Search className="w-4 h-4 text-gray-400" />
                         <input
                             type="text"
@@ -80,25 +92,18 @@ const CompetitivePage = () => {
                             <kbd className="px-1.5 py-0.5 bg-gray-100 rounded text-[9px] font-bold text-gray-500 font-mono">⌘K</kbd>
                         </div>
                     </div>
-                    <div className="pointer-events-auto flex items-center gap-3 ml-4">
-                        <button className="relative p-2 bg-white rounded-full shadow-sm border border-black/5 hover:bg-gray-50 transition-colors">
-                            <Bell className="w-4 h-4 text-[#1F1F1F]" />
-                            <span className="absolute top-2 right-2.5 w-1.5 h-1.5 bg-red-500 rounded-full border border-white" />
-                        </button>
-                        <div className="flex -space-x-2 hover:space-x-1 transition-all">
-                            {[1, 2, 3].map(i => (
-                                <div key={i} className={`w-8 h-8 rounded-full border-2 border-[#FAF9F4] bg-gray-200 flex items-center justify-center text-[10px] font-bold text-gray-600 shadow-sm relative z-${10 - i}`}>U{i}</div>
-                            ))}
-                        </div>
-                    </div>
+                    <button className="pointer-events-auto relative p-2 bg-white rounded-full shadow-sm border border-black/5 hover:bg-gray-50 transition-colors">
+                        <Bell className="w-4 h-4 text-[#1F1F1F]" />
+                        <span className="absolute top-2 right-2.5 w-1.5 h-1.5 bg-red-500 rounded-full border border-white" />
+                    </button>
                 </header>
 
                 {/* Competitive Content Scrollable Area */}
-                <div className="flex-1 overflow-y-auto scrollbar-hide pb-6 pr-2 pt-16">
+                <div className="flex-1 overflow-y-auto scrollbar-hide pb-6 pr-2 pt-4">
 
                     {/* 1. Page Header */}
                     <div className="mb-8 px-1">
-                        <h1 className="text-3xl font-extrabold text-[#1F1F1F] tracking-tight mb-1">Competitive Edge</h1>
+                        <h1 className="text-3xl font-bold text-[#1F1F1F] tracking-tight mb-1">Competitive Edge</h1>
                         <p className="text-gray-500 font-medium text-sm">
                             Train for speed, accuracy, and exam pressure.
                         </p>
@@ -240,59 +245,7 @@ const CompetitivePage = () => {
             </main>
 
             {/* Right Panel - Compact Calendar & Timeline (Global) */}
-            <aside className="w-72 bg-white rounded-[1.5rem] p-5 hidden xl:flex flex-col shadow-xl shadow-gray-200/50 border border-gray-100/50 shrink-0 z-10 h-full overflow-hidden">
-                <div className="flex items-center justify-between mb-4 shrink-0">
-                    <h3 className="font-extrabold text-sm text-[#1F1F1F]">May 2026</h3>
-                    <div className="flex gap-1 bg-gray-50 p-0.5 rounded-md border border-gray-100">
-                        <button className="p-1 hover:bg-white rounded transition-all text-gray-500 hover:text-black"><ChevronRight className="w-3 h-3 rotate-180" /></button>
-                        <button className="p-1 hover:bg-white rounded transition-all text-gray-500 hover:text-black"><ChevronRight className="w-3 h-3" /></button>
-                    </div>
-                </div>
-                <div className="grid grid-cols-7 gap-y-2 text-center text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-6 shrink-0">
-                    {['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map(d => <span key={d}>{d}</span>)}
-                    {Array.from({ length: 31 }, (_, i) => i + 1).map(d => (
-                        <div key={d} className={`w-6 h-6 mx-auto flex items-center justify-center rounded-full text-xs font-bold transition-all cursor-pointer ${d === 15 ? 'bg-[#F2AEC1] text-[#1F1F1F] shadow-sm' : d === 21 ? 'bg-[#1F1F1F] text-white shadow-md' : 'text-gray-600 hover:bg-gray-100'}`}>
-                            {d}
-                        </div>
-                    ))}
-                </div>
-                <div className="w-full h-px bg-gray-100 mb-4 shrink-0" />
-                <div className="flex-1 flex flex-col min-h-0">
-                    <div className="flex items-center justify-between mb-3 shrink-0">
-                        <h3 className="font-extrabold text-sm text-[#1F1F1F]">Today's Timeline</h3>
-                        <button className="text-[10px] font-bold text-gray-400 hover:text-black transition-colors">See all</button>
-                    </div>
-                    <div className="space-y-0 overflow-y-auto scrollbar-hide flex-1 pr-1 pl-1">
-                        {[
-                            { time: '07:00', title: 'Calculus Review', tag: 'Academic', color: 'bg-amber-100 text-amber-900', border: 'border-amber-200' },
-                            { time: '08:30', title: 'Speed Drill', tag: 'Competitive', color: 'bg-rose-100 text-rose-900', border: 'border-rose-200' },
-                            { time: '14:00', title: 'System Design', tag: 'Career', color: 'bg-emerald-100 text-emerald-900', border: 'border-emerald-200' },
-                            { time: '16:30', title: 'Mock Interview', tag: 'Career', color: 'bg-blue-100 text-blue-900', border: 'border-blue-200' },
-                            { time: '19:00', title: 'Daily Review', tag: 'General', color: 'bg-slate-100 text-slate-900', border: 'border-slate-200' },
-                        ].map((item, i, arr) => (
-                            <div key={i} className="flex gap-3 items-stretch relative group">
-                                {i !== arr.length - 1 && (
-                                    <div className="absolute left-[5.5px] top-3 bottom-[-12px] w-[2px] bg-slate-100 group-hover:bg-slate-200 transition-colors" />
-                                )}
-                                <div className={`mt-1.5 w-3 h-3 rounded-full border-2 border-white shadow-sm shrink-0 z-10 ${item.color.split(' ')[0].replace('bg-', 'bg-')}`} />
-                                <div className="flex-1 pb-4">
-                                    <div className="flex items-baseline justify-between mb-1">
-                                        <span className="text-[10px] font-bold text-slate-400">{item.time}</span>
-                                    </div>
-                                    <div className={`p-3 rounded-xl ${item.color} ${item.border} border transition-all hover:shadow-md hover:-translate-y-0.5 cursor-pointer`}>
-                                        <div className="font-bold text-xs mb-0.5">{item.title}</div>
-                                        <div className="flex items-center gap-1.5">
-                                            <span className="text-[9px] uppercase tracking-wider font-black opacity-70">{item.tag}</span>
-                                            <div className="h-0.5 w-0.5 rounded-full bg-current opacity-50" />
-                                            <span className="text-[9px] font-medium opacity-70">45m</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </aside>
+            <RightSidebar />
         </div>
     );
 };

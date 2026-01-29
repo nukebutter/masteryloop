@@ -2,13 +2,16 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import InputPage from './pages/InputPage';
-import Dashboard from './pages/Dashboard';
+
 import AcademicExcellence from './pages/AcademicExcellence';
 import CompetitivePage from './pages/CompetitivePage';
 import DrillPage from './pages/DrillPage';
 import CareerPage from './pages/CareerPage';
+import AnalyticsPage from './pages/AnalyticsPage';
+import SchedulePage from './pages/SchedulePage';
 import { LapPage, TestPage, ReteachPage } from './pages/AcademicFlow';
 import LearningContentPage from './pages/LearningContentPage';
+import TodayFocusPage from './pages/TodayFocusPage';
 import AuthModal from './components/AuthModal';
 
 function App() {
@@ -45,6 +48,9 @@ function App() {
           <Route path="/competitive" element={<CompetitivePage />} />
           <Route path="/competitive/drill" element={<DrillPage />} />
           <Route path="/career" element={<CareerPage />} />
+          <Route path="/analytics" element={<AnalyticsPage />} />
+          <Route path="/schedule" element={<SchedulePage />} />
+          <Route path="/today-focus" element={<TodayFocusPage />} />
           <Route
             path="/setup"
             element={
@@ -53,14 +59,7 @@ function App() {
                 <Navigate to="/" replace />
             }
           />
-          <Route
-            path="/dashboard"
-            element={
-              userData ?
-                <Dashboard intent={userIntent} userData={userData} /> :
-                <Navigate to="/" replace />
-            }
-          />
+
         </Routes>
       </div>
     </Router>

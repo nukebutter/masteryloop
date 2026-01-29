@@ -1,13 +1,16 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import RightSidebar from '../components/RightSidebar';
 import {
     LayoutGrid, Calendar, Users, BarChart2, BookOpen,
     Settings, LogOut, Search, Bell, ChevronRight,
-    Trophy, Briefcase, Zap, CheckCircle, AlertTriangle, XCircle, ArrowRight
+    Trophy, Briefcase, Zap, CheckCircle, AlertTriangle, XCircle, ArrowRight, ChevronLeft,
+    Activity, Target
 } from 'lucide-react';
 
 const LandingPage = ({ setIntent }) => {
     const navigate = useNavigate();
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
     const handlePathSelection = (path) => {
         if (setIntent) setIntent(path);
@@ -19,15 +22,17 @@ const LandingPage = ({ setIntent }) => {
         else navigate('/setup'); // Fallback
     };
 
-    const NavItem = ({ icon: Icon, label, active }) => (
+    const NavItem = ({ icon: Icon, label, active, onClick }) => (
         <button
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group ${active
+            onClick={onClick}
+            className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center px-2' : 'gap-3 px-3'} py-2.5 rounded-xl transition-all duration-200 group ${active
                 ? 'bg-white/10 text-white font-medium shadow-sm'
                 : 'text-gray-400 hover:text-white hover:bg-white/5'
                 }`}
+            title={isSidebarCollapsed ? label : ''}
         >
             <Icon className={`w-4 h-4 ${active ? 'text-white' : 'text-gray-500 group-hover:text-white'}`} />
-            <span className="text-sm tracking-wide">{label}</span>
+            {!isSidebarCollapsed && <span className="text-sm tracking-wide">{label}</span>}
         </button>
     );
 
@@ -35,29 +40,36 @@ const LandingPage = ({ setIntent }) => {
         <div className="flex h-screen w-full bg-[#FAF9F4] p-3 gap-3 font-sans overflow-hidden text-[#1F1F1F]">
 
             {/* Sidebar - Compact */}
-            <aside className="w-56 bg-[#1F1F1F] rounded-[1.5rem] p-4 flex flex-col hidden md:flex shrink-0 shadow-2xl shadow-black/5 z-20">
+            <aside className={`${isSidebarCollapsed ? 'w-20' : 'w-56'} bg-[#1F1F1F] rounded-[1.5rem] p-4 flex flex-col hidden md:flex shrink-0 shadow-2xl shadow-black/5 z-20 transition-all duration-300 relative`}>
+                <button
+                    onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                    className="absolute -right-3 top-10 w-6 h-6 bg-[#1F1F1F] rounded-full shadow-lg border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/5 z-50 transition-colors"
+                >
+                    {isSidebarCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+                </button>
 
                 {/* Brand */}
-                <div className="flex items-center gap-3 mb-8 px-2 pt-1">
-                    <div className="w-7 h-7 rounded-full bg-white flex items-center justify-center text-[#1F1F1F] font-bold text-lg shadow-md">
+                <div className={`flex items-center gap-3 mb-8 px-2 pt-1 ${isSidebarCollapsed ? 'justify-center' : ''}`}>
+                    <div className="w-7 h-7 rounded-full bg-white flex items-center justify-center text-[#1F1F1F] font-bold text-lg shadow-md shrink-0">
                         M
                     </div>
-                    <span className="font-bold text-base tracking-tight text-white">MasteryLoop</span>
+                    {!isSidebarCollapsed && <span className="font-bold text-base tracking-tight text-white whitespace-nowrap overflow-hidden">MasteryLoop</span>}
                 </div>
 
                 {/* Navigation */}
                 <div className="flex-1 flex flex-col gap-6 overflow-y-auto scrollbar-hide">
                     <section>
-                        <div className="text-[10px] font-extrabold text-gray-600 uppercase tracking-widest mb-2 px-3">General</div>
+                        {!isSidebarCollapsed && <div className="text-[10px] font-extrabold text-gray-600 uppercase tracking-widest mb-2 px-3 whitespace-nowrap">General</div>}
                         <nav className="space-y-0.5">
                             <NavItem icon={LayoutGrid} label="Dashboard" active />
-                            <NavItem icon={Calendar} label="Schedule" />
-                            <NavItem icon={Users} label="Community" />
-                            <NavItem icon={BarChart2} label="Analytics" />
-                            <NavItem icon={BookOpen} label="Resources" />
+                            <NavItem icon={Target} label="Today's Focus" onClick={() => navigate('/today-focus')} />
+                            <NavItem icon={BookOpen} label="Academic" onClick={() => handlePathSelection('academic')} />
+                            <NavItem icon={Trophy} label="Competitive" onClick={() => handlePathSelection('competitive')} />
+                            <NavItem icon={Briefcase} label="Career" onClick={() => handlePathSelection('career')} />
+                            <NavItem icon={BarChart2} label="Analytics" onClick={() => navigate('/analytics')} />
+                            <NavItem icon={Calendar} label="Schedule" onClick={() => navigate('/schedule')} />
                         </nav>
                     </section>
-
                     <section>
                         <div className="text-[10px] font-extrabold text-gray-600 uppercase tracking-widest mb-2 px-3">Tools</div>
                         <nav className="space-y-0.5">
@@ -87,7 +99,7 @@ const LandingPage = ({ setIntent }) => {
 
                     {/* Left: Greeting (Navbar-like) */}
                     <div className="pointer-events-auto">
-                        <h1 className="text-3xl font-extrabold text-[#1F1F1F] tracking-tight flex items-center gap-2">
+                        <h1 className="text-3xl font-bold text-[#1F1F1F] tracking-tight flex items-center gap-2">
                             Good morning, Learner
                             <span className="text-2xl font-normal text-gray-400">👋</span>
                         </h1>
@@ -203,10 +215,17 @@ const LandingPage = ({ setIntent }) => {
                         {/* --- ROW 2: FOCUS & MASTERY (Unconditional) --- */}
                         <>
                             {/* Today's Focus (Moss Green) - Enriched Content */}
-                            <div className="col-span-12 lg:col-span-6 bg-[#A3B18A] rounded-[1.25rem] p-5 relative overflow-hidden group shadow-sm hover:shadow-md transition-all cursor-pointer hover:scale-[1.01] flex flex-col justify-between h-full">
+                            <div
+                                onClick={() => navigate('/today-focus')}
+                                className="col-span-12 lg:col-span-6 bg-[#A3B18A] rounded-[1.25rem] p-5 relative overflow-hidden group shadow-sm hover:shadow-md transition-all cursor-pointer hover:scale-[1.01] flex flex-col justify-between h-full">
                                 <div className="z-10 relative">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <span className="text-[9px] font-black text-[#1F1F1F]/60 uppercase tracking-widest">Today's Focus</span>
+                                    <div className="flex justify-between items-start mb-2">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 bg-[#1F1F1F] rounded-lg flex items-center justify-center text-white shadow-sm rotate-3">
+                                                <Target className="w-4 h-4" />
+                                            </div>
+                                            <span className="text-[9px] font-black text-[#1F1F1F]/60 uppercase tracking-widest mt-1">Today's Focus</span>
+                                        </div>
                                     </div>
                                     <div>
                                         <h3 className="text-xl font-extrabold text-[#1F1F1F] leading-tight mb-0.5">
@@ -228,7 +247,9 @@ const LandingPage = ({ setIntent }) => {
                                         <span className="text-[10px] font-bold text-[#1F1F1F]/40">•</span>
                                         <span className="text-[10px] font-bold text-[#1F1F1F]/60">45 min</span>
                                     </div>
-                                    <button className="w-10 h-10 bg-[#1F1F1F] rounded-full flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-all">
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); navigate('/today-focus'); }}
+                                        className="w-10 h-10 bg-[#1F1F1F] rounded-full flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-all">
                                         <ArrowRight className="w-5 h-5" />
                                     </button>
                                 </div>
@@ -241,8 +262,8 @@ const LandingPage = ({ setIntent }) => {
                             <div className="col-span-12 lg:col-span-6 bg-[#A7C5EB] rounded-[1.25rem] p-5 relative overflow-hidden group shadow-sm hover:shadow-md transition-all cursor-pointer hover:scale-[1.01] flex flex-col h-full">
                                 <div className="flex justify-between items-center mb-4">
                                     <h3 className="text-sm font-extrabold text-[#1F1F1F]">Concept Mastery</h3>
-                                    <div className="p-1.5 bg-white/20 rounded-lg">
-                                        <Zap className="w-3.5 h-3.5 text-[#1F1F1F]" />
+                                    <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-[#A7C5EB] shadow-sm -rotate-3">
+                                        <Zap className="w-4 h-4" />
                                     </div>
                                 </div>
 
@@ -271,8 +292,10 @@ const LandingPage = ({ setIntent }) => {
                             onClick={() => handlePathSelection('career')}
                             className="col-span-12 lg:col-span-4 bg-[#B5C99A] rounded-[1.25rem] p-5 relative overflow-hidden group cursor-pointer transition-all hover:shadow-md hover:scale-[1.01] flex flex-col justify-between h-full min-h-[160px]"
                         >
-                            <div className="flex items-center gap-2 mb-4">
-                                <Briefcase className="w-4 h-4 text-[#1F1F1F] opacity-60" />
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="w-8 h-8 bg-[#1F1F1F] rounded-lg flex items-center justify-center text-white shadow-sm rotate-3">
+                                    <Briefcase className="w-4 h-4" />
+                                </div>
                                 <span className="font-bold text-[#1F1F1F] uppercase tracking-wide opacity-60 text-[9px]">Professional</span>
                             </div>
                             <h3 className="text-lg font-extrabold text-[#1F1F1F] leading-tight mb-2">Career<br />Construction</h3>
@@ -287,7 +310,12 @@ const LandingPage = ({ setIntent }) => {
                             {/* Readiness Indicator */}
                             <div className="col-span-12 lg:col-span-4 bg-white border border-slate-100 rounded-[1.25rem] p-5 flex flex-col justify-between relative hover:shadow-md transition-all hover:scale-[1.01] cursor-pointer h-full">
                                 <div>
-                                    <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Readiness</h4>
+                                    <div className="flex justify-between items-start mb-2">
+                                        <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">Readiness</h4>
+                                        <div className="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center text-slate-600 shadow-sm -rotate-3">
+                                            <Activity className="w-4 h-4" />
+                                        </div>
+                                    </div>
                                     <div className="flex items-end gap-2 mb-3">
                                         <div className="text-3xl font-extrabold text-slate-800 leading-none">62%</div>
                                         <span className="text-[10px] font-bold text-slate-400 mb-0.5">GATE CS</span>
@@ -306,7 +334,9 @@ const LandingPage = ({ setIntent }) => {
                             <div className="col-span-12 lg:col-span-4 bg-[#97BCE8] rounded-[1.25rem] p-5 flex flex-col justify-between relative overflow-hidden hover:shadow-md hover:scale-[1.01] transition-all cursor-pointer h-full">
                                 <div className="flex justify-between items-start mb-2">
                                     <h3 className="font-bold text-[#1F1F1F] text-sm leading-snug">Session<br />Volume</h3>
-                                    <BarChart2 className="w-4 h-4 text-[#1F1F1F] opacity-50" />
+                                    <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-[#97BCE8] shadow-sm rotate-3">
+                                        <BarChart2 className="w-4 h-4" />
+                                    </div>
                                 </div>
                                 <div className="mt-auto relative z-10">
                                     <div className="text-3xl font-extrabold text-[#1F1F1F] tracking-tighter">
@@ -337,76 +367,8 @@ const LandingPage = ({ setIntent }) => {
             </main>
 
             {/* Right Panel - Compact Calendar & Timeline - Always Visible */}
-            <aside className="w-72 bg-white rounded-[1.5rem] p-5 hidden xl:flex flex-col shadow-xl shadow-gray-200/50 border border-gray-100/50 shrink-0 z-10 h-full overflow-hidden">
-                {/* ... Right Sidebar Content ... */}
-                {/* Calendar Header */}
-                <div className="flex items-center justify-between mb-4 shrink-0">
-                    <h3 className="font-extrabold text-sm text-[#1F1F1F]">May 2026</h3>
-                    <div className="flex gap-1 bg-gray-50 p-0.5 rounded-md border border-gray-100">
-                        <button className="p-1 hover:bg-white rounded transition-all text-gray-500 hover:text-black"><ChevronRight className="w-3 h-3 rotate-180" /></button>
-                        <button className="p-1 hover:bg-white rounded transition-all text-gray-500 hover:text-black"><ChevronRight className="w-3 h-3" /></button>
-                    </div>
-                </div>
-
-                {/* Calendar Grid */}
-                <div className="grid grid-cols-7 gap-y-2 text-center text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-6 shrink-0">
-                    {['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map(d => <span key={d}>{d}</span>)}
-                    {Array.from({ length: 31 }, (_, i) => i + 1).map(d => (
-                        <div key={d} className={`w-6 h-6 mx-auto flex items-center justify-center rounded-full text-xs font-bold transition-all cursor-pointer ${d === 15 ? 'bg-[#F2AEC1] text-[#1F1F1F] shadow-sm' : d === 21 ? 'bg-[#1F1F1F] text-white shadow-md' : 'text-gray-600 hover:bg-gray-100'}`}>
-                            {d}
-                        </div>
-                    ))}
-                </div>
-
-                <div className="w-full h-px bg-gray-100 mb-4 shrink-0" />
-
-                {/* Timeline - Filling Remaining Space */}
-                <div className="flex-1 flex flex-col min-h-0">
-                    <div className="flex items-center justify-between mb-3 shrink-0">
-                        <h3 className="font-extrabold text-sm text-[#1F1F1F]">Today's Timeline</h3>
-                        <button className="text-[10px] font-bold text-gray-400 hover:text-black transition-colors">See all</button>
-                    </div>
-
-                    <div className="space-y-0 overflow-y-auto scrollbar-hide flex-1 pr-1 pl-1">
-                        {[
-                            { time: '07:00', title: 'Calculus Review', tag: 'Academic', color: 'bg-amber-100 text-amber-900', border: 'border-amber-200' },
-                            { time: '08:30', title: 'Speed Drill', tag: 'Competitive', color: 'bg-rose-100 text-rose-900', border: 'border-rose-200' },
-                            { time: '14:00', title: 'System Design', tag: 'Career', color: 'bg-emerald-100 text-emerald-900', border: 'border-emerald-200' },
-                            { time: '16:30', title: 'Mock Interview', tag: 'Career', color: 'bg-blue-100 text-blue-900', border: 'border-blue-200' },
-                            { time: '19:00', title: 'Daily Review', tag: 'General', color: 'bg-slate-100 text-slate-900', border: 'border-slate-200' },
-                        ].map((item, i, arr) => (
-                            <div key={i} className="flex gap-3 items-stretch relative group">
-                                {/* Vertical Line */}
-                                {i !== arr.length - 1 && (
-                                    <div className="absolute left-[5.5px] top-3 bottom-[-12px] w-[2px] bg-slate-100 group-hover:bg-slate-200 transition-colors" />
-                                )}
-
-                                {/* Marker */}
-                                <div className={`mt-1.5 w-3 h-3 rounded-full border-2 border-white shadow-sm shrink-0 z-10 ${item.color.split(' ')[0].replace('bg-', 'bg-')}`} />
-
-                                <div className="flex-1 pb-4">
-                                    <div className="flex items-baseline justify-between mb-1">
-                                        <span className="text-[10px] font-bold text-slate-400">{item.time}</span>
-                                    </div>
-                                    <div className={`p-3 rounded-xl ${item.color} ${item.border} border transition-all hover:shadow-md hover:-translate-y-0.5 cursor-pointer`}>
-                                        <div className="font-bold text-xs mb-0.5">{item.title}</div>
-                                        <div className="flex items-center gap-1.5">
-                                            <span className="text-[9px] uppercase tracking-wider font-black opacity-70">{item.tag}</span>
-                                            <div className="h-0.5 w-0.5 rounded-full bg-current opacity-50" />
-                                            <span className="text-[9px] font-medium opacity-70">45m</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-
-                    <button className="w-full py-3 mt-2 shrink-0 bg-[#1F1F1F] text-white rounded-xl font-bold text-xs hover:bg-black transition-all shadow-lg active:scale-[0.98] flex items-center justify-center gap-2">
-                        <span>View Full Schedule</span>
-                        <ChevronRight className="w-3 h-3" />
-                    </button>
-                </div>
-            </aside>
+            {/* Right Panel - Compact Calendar & Timeline - Always Visible */}
+            <RightSidebar />
 
         </div>
     );

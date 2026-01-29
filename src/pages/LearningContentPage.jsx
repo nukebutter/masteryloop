@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, BookOpen, Target, Trophy, ArrowRight, CheckCircle2, Zap, Lightbulb, Lock, Check, Loader2 } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router-dom';
+import {
+    ArrowLeft, BookOpen, Target, Trophy, ArrowRight, CheckCircle2, Zap, Lightbulb, Lock, Check, Loader2,
+    LayoutGrid, Briefcase, BarChart2, Settings, LogOut, Search, Bell, ChevronLeft, ChevronRight
+} from 'lucide-react';
 import { operatingSystemsSchema } from '../data/conceptSchema';
 import { getQuizForSubConcept } from '../data/quizData';
 import QuizComponent from '../components/QuizComponent';
@@ -8,10 +11,40 @@ import ReteachView from '../components/ReteachView';
 import { generateExplanation, generateQuiz, generateAnalogy, generateSimplifiedExplanation, evaluateConceptualAnswer } from '../services/aiService';
 
 const LearningContentPage = () => {
+    const { concept } = useParams();
     const navigate = useNavigate();
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+    const NavItem = ({ icon: Icon, label, active, onClick }) => (
+        <button
+            onClick={onClick}
+            className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center px-2' : 'gap-3 px-3'} py-2.5 rounded-xl transition-all duration-200 group ${active
+                ? 'bg-white/10 text-white font-medium shadow-sm'
+                : 'text-gray-400 hover:text-white hover:bg-white/5'
+                }`}
+            title={isSidebarCollapsed ? label : ''}
+        >
+            <Icon className={`w-4 h-4 ${active ? 'text-white' : 'text-gray-500 group-hover:text-white'}`} />
+            {!isSidebarCollapsed && <span className="text-sm tracking-wide">{label}</span>}
+        </button>
+    );
 
     // State management for adaptive loop
-    const [currentSubConceptIndex, setCurrentSubConceptIndex] = useState(0);
+    // Find initial index based on URL parameter or default to 0
+    const initialIndex = React.useMemo(() => {
+        const idx = operatingSystemsSchema.subConcepts.findIndex(sc => sc.id === concept);
+        return idx >= 0 ? idx : 0;
+    }, [concept]);
+
+    const [currentSubConceptIndex, setCurrentSubConceptIndex] = useState(initialIndex);
+
+    // Update index if URL changes
+    useEffect(() => {
+        const idx = operatingSystemsSchema.subConcepts.findIndex(sc => sc.id === concept);
+        if (idx >= 0) {
+            setCurrentSubConceptIndex(idx);
+        }
+    }, [concept]);
     const [flowState, setFlowState] = useState('explain');
     const [quizResults, setQuizResults] = useState(null);
     const [attemptsCount, setAttemptsCount] = useState(0);
@@ -483,22 +516,96 @@ const LearningContentPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#FAF9F4] py-6 px-4">
-            {/* Top Bar */}
-            <div className="max-w-7xl mx-auto mb-6">
+        <div className="flex h-screen w-full bg-[#FAF9F4] p-3 gap-3 font-sans overflow-hidden text-[#1F1F1F]">
+            {/* Sidebar - Compact (Global) */}
+            <aside className={`${isSidebarCollapsed ? 'w-20' : 'w-56'} bg-[#1F1F1F] rounded-[1.5rem] p-4 flex flex-col hidden md:flex shrink-0 shadow-2xl shadow-black/5 z-20 transition-all duration-300 relative`}>
                 <button
-                    onClick={() => navigate('/academic')}
-                    className="flex items-center gap-2 text-slate-600 hover:text-slate-900 font-medium text-sm transition-colors"
+                    onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                    className="absolute -right-3 top-10 w-6 h-6 bg-[#1F1F1F] rounded-full shadow-lg border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/5 z-50 transition-colors"
                 >
-                    <ArrowLeft className="w-4 h-4" />
-                    Back to Academic Excellence
+                    {isSidebarCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
                 </button>
-            </div>
 
-            {/* Main Content */}
-            <div className="max-w-7xl mx-auto">
-                {renderContent()}
-            </div>
+                <div className={`flex items-center gap-3 mb-8 px-2 pt-1 ${isSidebarCollapsed ? 'justify-center' : ''}`}>
+                    <div className="w-7 h-7 rounded-full bg-white flex items-center justify-center text-[#1F1F1F] font-bold text-lg shadow-md shrink-0">M</div>
+                    {!isSidebarCollapsed && <span className="font-bold text-base tracking-tight text-white whitespace-nowrap overflow-hidden">MasteryLoop</span>}
+                </div>
+                <div className="flex-1 flex flex-col gap-6 overflow-y-auto scrollbar-hide">
+                    <section>
+                        {!isSidebarCollapsed && <div className="text-[10px] font-extrabold text-gray-600 uppercase tracking-widest mb-2 px-3 whitespace-nowrap">General</div>}
+                        <nav className="space-y-0.5">
+                            <NavItem icon={LayoutGrid} label="Dashboard" onClick={() => navigate('/')} />
+                            <NavItem icon={BookOpen} label="Academic" active onClick={() => navigate('/academic')} />
+                            <NavItem icon={Trophy} label="Competitive" onClick={() => navigate('/competitive')} />
+                            <NavItem icon={Briefcase} label="Career" onClick={() => navigate('/career')} />
+                            <NavItem icon={BarChart2} label="Analytics" />
+                        </nav>
+                    </section>
+                    <section>
+                        {!isSidebarCollapsed && <div className="text-[10px] font-extrabold text-gray-600 uppercase tracking-widest mb-2 px-3 whitespace-nowrap">Tools</div>}
+                        <nav className="space-y-0.5">
+                            <NavItem icon={Settings} label="Search" />
+                            <NavItem icon={LogOut} label="Log out" />
+                        </nav>
+                    </section>
+                </div>
+                <div className="mt-auto pt-4 border-t border-white/5">
+                    <div className={`bg-white/5 p-2 rounded-xl flex items-center gap-3 hover:bg-white/10 transition-colors cursor-pointer ${isSidebarCollapsed ? 'justify-center' : ''}`}>
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 shadow-inner shrink-0" />
+                        {!isSidebarCollapsed && (
+                            <div className="overflow-hidden">
+                                <div className="text-sm font-bold text-white whitespace-nowrap">Guest User</div>
+                                <div className="text-[10px] text-gray-400 font-medium whitespace-nowrap">Student Plan</div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </aside>
+
+            {/* Main Content Area */}
+            <main className="flex-1 flex flex-col min-w-0 mx-2 h-full relative">
+
+                {/* Top Header */}
+                <header className="absolute top-0 left-0 right-0 z-50 h-14 flex items-center justify-between shrink-0 pt-2 px-4 pointer-events-none">
+                    <div className="pointer-events-auto">
+                        <button
+                            onClick={() => navigate('/academic')}
+                            className="flex items-center gap-2 text-slate-600 hover:text-slate-900 font-medium text-sm transition-colors bg-white/50 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-200/50 shadow-sm"
+                        >
+                            <ArrowLeft className="w-4 h-4" />
+                            Back to Academic Excellence
+                        </button>
+                    </div>
+
+                    <div className="flex items-center gap-3 pointer-events-auto">
+                        {/* Toggle AI Button */}
+                        <button
+                            onClick={() => setUseAI(!useAI)}
+                            className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all border shadow-sm ${useAI
+                                ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
+                                : 'bg-slate-50 text-slate-500 border-slate-200'
+                                }`}
+                        >
+                            <Zap className={`w-3.5 h-3.5 ${useAI ? 'fill-indigo-700' : ''}`} />
+                            {useAI ? 'AI Enhanced' : 'Standard Mode'}
+                        </button>
+
+                        <div className="flex items-center gap-3">
+                            <button className="relative p-2 bg-white rounded-full shadow-sm border border-black/5 hover:bg-gray-50 transition-all duration-200 ease-out hover:-translate-y-[1px] hover:shadow-md active:translate-y-0 active:scale-95 focus:outline-none focus:ring-2 focus:ring-indigo-100">
+                                <Bell className="w-4 h-4 text-[#1F1F1F]" />
+                                <span className="absolute top-2 right-2.5 w-1.5 h-1.5 bg-red-500 rounded-full border border-white" />
+                            </button>
+                        </div>
+                    </div>
+                </header>
+
+                {/* Learning Content Scrollable Area */}
+                <div className="flex-1 overflow-y-auto scrollbar-hide pb-6 pr-2 pt-20">
+                    <div className="max-w-7xl mx-auto">
+                        {renderContent()}
+                    </div>
+                </div>
+            </main>
         </div>
     );
 };

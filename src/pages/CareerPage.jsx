@@ -1,25 +1,28 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import RightSidebar from '../components/RightSidebar';
 import {
     LayoutGrid, Calendar, Users, BarChart2, BookOpen,
     Settings, LogOut, Search, Bell, ChevronRight,
     Trophy, Briefcase, Zap, CheckCircle, AlertTriangle, XCircle, ArrowRight,
-    Target, Network, Server, Globe, PenTool
+    Target, Network, Server, Globe, PenTool, ChevronLeft
 } from 'lucide-react';
 
 const CareerPage = () => {
     const navigate = useNavigate();
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
     const NavItem = ({ icon: Icon, label, active, onClick }) => (
         <button
             onClick={onClick}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ease-out group outline-none focus:ring-2 focus:ring-white/20 active:scale-[0.98] active:translate-y-0 ${active
+            className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center px-2' : 'gap-3 px-3'} py-2.5 rounded-xl transition-all duration-200 ease-out group outline-none focus:ring-2 focus:ring-white/20 active:scale-[0.98] active:translate-y-0 ${active
                 ? 'bg-white/10 text-white font-medium shadow-sm translate-y-[-1px]'
                 : 'text-gray-400 hover:text-white hover:bg-white/5 hover:-translate-y-[1px] hover:shadow-md'
                 }`}
+            title={isSidebarCollapsed ? label : ''}
         >
             <Icon className={`w-4 h-4 ${active ? 'text-white' : 'text-gray-500 group-hover:text-white'}`} />
-            <span className="text-sm tracking-wide">{label}</span>
+            {!isSidebarCollapsed && <span className="text-sm tracking-wide">{label}</span>}
         </button>
     );
 
@@ -27,21 +30,48 @@ const CareerPage = () => {
         <div className="flex h-screen w-full bg-[#FAF9F4] p-3 gap-3 font-sans overflow-hidden text-[#1F1F1F]">
 
             {/* Sidebar - Compact (Global) */}
-            <aside className="w-56 bg-[#1F1F1F] rounded-[1.5rem] p-4 flex flex-col hidden md:flex shrink-0 shadow-2xl shadow-black/5 z-20">
-                <div className="flex items-center gap-3 mb-8 px-2 pt-1">
-                    <div className="w-7 h-7 rounded-full bg-white flex items-center justify-center text-[#1F1F1F] font-bold text-lg shadow-md">M</div>
-                    <span className="font-bold text-base tracking-tight text-white">MasteryLoop</span>
+            <aside className={`${isSidebarCollapsed ? 'w-20' : 'w-56'} bg-[#1F1F1F] rounded-[1.5rem] p-4 flex flex-col hidden md:flex shrink-0 shadow-2xl shadow-black/5 z-20 transition-all duration-300 relative`}>
+                <button
+                    onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                    className="absolute -right-3 top-10 w-6 h-6 bg-[#1F1F1F] rounded-full shadow-lg border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/5 z-50 transition-colors"
+                >
+                    {isSidebarCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+                </button>
+
+                <div className={`flex items-center gap-3 mb-8 px-2 pt-1 ${isSidebarCollapsed ? 'justify-center' : ''}`}>
+                    <div className="w-7 h-7 rounded-full bg-white flex items-center justify-center text-[#1F1F1F] font-bold text-lg shadow-md shrink-0">M</div>
+                    {!isSidebarCollapsed && <span className="font-bold text-base tracking-tight text-white whitespace-nowrap overflow-hidden">MasteryLoop</span>}
                 </div>
                 <div className="flex-1 flex flex-col gap-6 overflow-y-auto scrollbar-hide">
                     <section>
-                        <div className="text-[10px] font-extrabold text-gray-600 uppercase tracking-widest mb-2 px-3">General</div>
+                        {!isSidebarCollapsed && <div className="text-[10px] font-extrabold text-gray-600 uppercase tracking-widest mb-2 px-3 whitespace-nowrap">General</div>}
                         <nav className="space-y-0.5">
                             <NavItem icon={LayoutGrid} label="Dashboard" onClick={() => navigate('/')} />
                             <NavItem icon={BookOpen} label="Academic" onClick={() => navigate('/academic')} />
                             <NavItem icon={Trophy} label="Competitive" onClick={() => navigate('/competitive')} />
                             <NavItem icon={Briefcase} label="Career" active />
+                            <NavItem icon={BarChart2} label="Analytics" onClick={() => navigate('/analytics')} />
+                            <NavItem icon={Calendar} label="Schedule" onClick={() => navigate('/schedule')} />
                         </nav>
                     </section>
+                    <section>
+                        {!isSidebarCollapsed && <div className="text-[10px] font-extrabold text-gray-600 uppercase tracking-widest mb-2 px-3 whitespace-nowrap">Tools</div>}
+                        <nav className="space-y-0.5">
+                            <NavItem icon={Settings} label="Search" />
+                            <NavItem icon={LogOut} label="Log out" />
+                        </nav>
+                    </section>
+                </div>
+                <div className="mt-auto pt-4 border-t border-white/5">
+                    <div className={`bg-white/5 p-2 rounded-xl flex items-center gap-3 hover:bg-white/10 transition-colors cursor-pointer ${isSidebarCollapsed ? 'justify-center' : ''}`}>
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 shadow-inner shrink-0" />
+                        {!isSidebarCollapsed && (
+                            <div className="overflow-hidden">
+                                <div className="text-sm font-bold text-white whitespace-nowrap">Guest User</div>
+                                <div className="text-[10px] text-gray-400 font-medium whitespace-nowrap">Student Plan</div>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </aside>
 
@@ -49,19 +79,19 @@ const CareerPage = () => {
             <main className="flex-1 flex flex-col min-w-0 mx-2 h-full relative">
 
                 {/* Top Header */}
-                <header className="absolute top-0 left-0 right-0 z-50 h-14 flex items-center justify-between shrink-0 pt-2 pointer-events-none">
-                    <div className="pointer-events-auto flex items-center gap-2 flex-1 bg-white rounded-full px-4 py-2 shadow-sm border border-black/5 max-w-lg transition-all duration-200 ease-out hover:shadow-md hover:-translate-y-[1px] h-10">
+                <header className="absolute top-0 left-0 right-0 z-50 h-14 flex items-center justify-end shrink-0 pt-2 pointer-events-none px-4 gap-3">
+                    <div className="pointer-events-auto flex items-center gap-2 bg-white rounded-full px-4 py-2 shadow-sm border border-black/5 w-64 transition-all duration-200 ease-out hover:shadow-md hover:-translate-y-[1px] h-10">
                         <Search className="w-4 h-4 text-gray-400" />
                         <input type="text" placeholder="Search..." className="flex-1 bg-transparent border-none outline-none text-sm font-medium placeholder:text-gray-400 text-[#1F1F1F]" />
                     </div>
                 </header>
 
                 {/* Career Content Scrollable Area */}
-                <div className="flex-1 overflow-y-auto scrollbar-hide pb-6 pr-2 pt-16">
+                <div className="flex-1 overflow-y-auto scrollbar-hide pb-6 pr-2 pt-4">
 
                     {/* 1. Page Header */}
                     <div className="mb-8 px-1">
-                        <h1 className="text-3xl font-extrabold text-[#1F1F1F] tracking-tight mb-1">Career Construction</h1>
+                        <h1 className="text-3xl font-bold text-[#1F1F1F] tracking-tight mb-1">Career Construction</h1>
                         <p className="text-gray-500 font-medium text-sm">
                             Build skills that translate directly to job readiness.
                         </p>
@@ -77,7 +107,7 @@ const CareerPage = () => {
                                 </div>
                                 <div>
                                     <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Target Role</div>
-                                    <h2 className="text-3xl font-extrabold text-[#1F1F1F] leading-tight">Backend Developer</h2>
+                                    <h2 className="text-xl font-bold text-[#1F1F1F] leading-tight">Backend Developer</h2>
                                     <div className="flex items-center gap-2 mt-2">
                                         <span className="px-2 py-0.5 bg-slate-100 rounded text-[10px] font-bold text-slate-600 uppercase tracking-wide">Mid-Level</span>
                                         <span className="px-2 py-0.5 bg-slate-100 rounded text-[10px] font-bold text-slate-600 uppercase tracking-wide">Remote</span>
@@ -180,6 +210,8 @@ const CareerPage = () => {
                     </div>
                 </div>
             </main>
+            {/* Right Panel - Compact Calendar & Timeline (Global) */}
+            <RightSidebar />
         </div>
     );
 };

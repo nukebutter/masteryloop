@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
     LayoutGrid, Calendar, Users, BarChart2, BookOpen,
     Settings, LogOut, Trophy, CheckCircle, AlertTriangle, XCircle,
-    Timer, ArrowRight, X, RotateCcw
+    Timer, ArrowRight, X, RotateCcw, Briefcase, ChevronLeft, ChevronRight
 } from 'lucide-react';
 
 // Mock Data
@@ -47,6 +47,7 @@ const DrillPage = () => {
     const [answers, setAnswers] = useState({});
     const [timeLeft, setTimeLeft] = useState(600); // 10 minutes
     const [isFinished, setIsFinished] = useState(false);
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
     useEffect(() => {
         if (isFinished) return;
@@ -98,13 +99,14 @@ const DrillPage = () => {
     const NavItem = ({ icon: Icon, label, active, onClick }) => (
         <button
             onClick={onClick}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group ${active
+            className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center px-2' : 'gap-3 px-3'} py-2.5 rounded-xl transition-all duration-200 group ${active
                 ? 'bg-white/10 text-white font-medium shadow-sm'
                 : 'text-gray-400 hover:text-white hover:bg-white/5'
                 }`}
+            title={isSidebarCollapsed ? label : ''}
         >
             <Icon className={`w-4 h-4 ${active ? 'text-white' : 'text-gray-500 group-hover:text-white'}`} />
-            <span className="text-sm tracking-wide">{label}</span>
+            {!isSidebarCollapsed && <span className="text-sm tracking-wide">{label}</span>}
         </button>
     );
 
@@ -113,19 +115,28 @@ const DrillPage = () => {
         return (
             <div className="flex h-screen w-full bg-[#FAF9F4] p-3 gap-3 font-sans overflow-hidden text-[#1F1F1F]">
                 {/* Reusing Sidebar for consistency */}
-                <aside className="w-56 bg-[#1F1F1F] rounded-[1.5rem] p-4 flex flex-col hidden md:flex shrink-0 shadow-2xl shadow-black/5 z-20">
-                    <div className="flex items-center gap-3 mb-8 px-2 pt-1">
-                        <div className="w-7 h-7 rounded-full bg-white flex items-center justify-center text-[#1F1F1F] font-bold text-lg shadow-md">M</div>
-                        <span className="font-bold text-base tracking-tight text-white">MasteryLoop</span>
+                <aside className={`${isSidebarCollapsed ? 'w-20' : 'w-56'} bg-[#1F1F1F] rounded-[1.5rem] p-4 flex flex-col hidden md:flex shrink-0 shadow-2xl shadow-black/5 z-20 transition-all duration-300 relative`}>
+                    <button
+                        onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                        className="absolute -right-3 top-10 w-6 h-6 bg-[#1F1F1F] rounded-full shadow-lg border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/5 z-50 transition-colors"
+                    >
+                        {isSidebarCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+                    </button>
+
+                    <div className={`flex items-center gap-3 mb-8 px-2 pt-1 ${isSidebarCollapsed ? 'justify-center' : ''}`}>
+                        <div className="w-7 h-7 rounded-full bg-white flex items-center justify-center text-[#1F1F1F] font-bold text-lg shadow-md shrink-0">M</div>
+                        {!isSidebarCollapsed && <span className="font-bold text-base tracking-tight text-white whitespace-nowrap overflow-hidden">MasteryLoop</span>}
                     </div>
                     {/* ... Navigation Items reused... */}
                     <div className="flex-1 flex flex-col gap-6 overflow-y-auto scrollbar-hide">
                         <section>
-                            <div className="text-[10px] font-extrabold text-gray-600 uppercase tracking-widest mb-2 px-3">General</div>
+                            {!isSidebarCollapsed && <div className="text-[10px] font-extrabold text-gray-600 uppercase tracking-widest mb-2 px-3 whitespace-nowrap">General</div>}
                             <nav className="space-y-0.5">
                                 <NavItem icon={LayoutGrid} label="Dashboard" onClick={() => navigate('/')} />
                                 <NavItem icon={BookOpen} label="Academic" onClick={() => navigate('/academic')} />
                                 <NavItem icon={Trophy} label="Competitive" active onClick={() => navigate('/competitive')} />
+                                <NavItem icon={Briefcase} label="Career" onClick={() => navigate('/career')} />
+                                <NavItem icon={BarChart2} label="Analytics" />
                             </nav>
                         </section>
                     </div>
@@ -182,18 +193,27 @@ const DrillPage = () => {
     return (
         <div className="flex h-screen w-full bg-[#FAF9F4] p-3 gap-3 font-sans overflow-hidden text-[#1F1F1F]">
             {/* Reusing Sidebar for consistency */}
-            <aside className="w-56 bg-[#1F1F1F] rounded-[1.5rem] p-4 flex flex-col hidden md:flex shrink-0 shadow-2xl shadow-black/5 z-20">
-                <div className="flex items-center gap-3 mb-8 px-2 pt-1">
-                    <div className="w-7 h-7 rounded-full bg-white flex items-center justify-center text-[#1F1F1F] font-bold text-lg shadow-md">M</div>
-                    <span className="font-bold text-base tracking-tight text-white">MasteryLoop</span>
+            <aside className={`${isSidebarCollapsed ? 'w-20' : 'w-56'} bg-[#1F1F1F] rounded-[1.5rem] p-4 flex flex-col hidden md:flex shrink-0 shadow-2xl shadow-black/5 z-20 transition-all duration-300 relative`}>
+                <button
+                    onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                    className="absolute -right-3 top-10 w-6 h-6 bg-[#1F1F1F] rounded-full shadow-lg border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/5 z-50 transition-colors"
+                >
+                    {isSidebarCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+                </button>
+
+                <div className={`flex items-center gap-3 mb-8 px-2 pt-1 ${isSidebarCollapsed ? 'justify-center' : ''}`}>
+                    <div className="w-7 h-7 rounded-full bg-white flex items-center justify-center text-[#1F1F1F] font-bold text-lg shadow-md shrink-0">M</div>
+                    {!isSidebarCollapsed && <span className="font-bold text-base tracking-tight text-white whitespace-nowrap overflow-hidden">MasteryLoop</span>}
                 </div>
                 <div className="flex-1 flex flex-col gap-6 overflow-y-auto scrollbar-hide">
                     <section>
-                        <div className="text-[10px] font-extrabold text-gray-600 uppercase tracking-widest mb-2 px-3">General</div>
+                        {!isSidebarCollapsed && <div className="text-[10px] font-extrabold text-gray-600 uppercase tracking-widest mb-2 px-3 whitespace-nowrap">General</div>}
                         <nav className="space-y-0.5">
                             <NavItem icon={LayoutGrid} label="Dashboard" onClick={() => navigate('/')} />
                             <NavItem icon={BookOpen} label="Academic" onClick={() => navigate('/academic')} />
                             <NavItem icon={Trophy} label="Competitive" active onClick={() => navigate('/competitive')} />
+                            <NavItem icon={Briefcase} label="Career" onClick={() => navigate('/career')} />
+                            <NavItem icon={BarChart2} label="Analytics" />
                         </nav>
                     </section>
                 </div>
