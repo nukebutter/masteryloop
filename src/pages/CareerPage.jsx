@@ -24,6 +24,60 @@ const CareerPage = () => {
         return saved ? JSON.parse(saved) : null;
     });
 
+    // DB Integration: Load and Sync
+    useEffect(() => {
+        const loadFromDB = async () => {
+            try {
+                const { getCareerProfile, initDefaultUser } = await import('../services/db');
+                let userId = localStorage.getItem('mastery_userid');
+
+                if (!userId) {
+                    userId = await initDefaultUser();
+                    localStorage.setItem('mastery_userid', userId.toString());
+                }
+
+                const dbProfile = await getCareerProfile(parseInt(userId));
+                // Only load if local storage is empty to avoid overwriting session state unintentionally
+                if (dbProfile && !careerProfile) {
+                    setCareerProfile(dbProfile.data);
+                }
+            } catch (err) {
+                console.error("Failed to load from DB:", err);
+            }
+        };
+        loadFromDB();
+    }, []);
+
+    // DB Integration: Save on Change
+    useEffect(() => {
+        if (careerProfile) {
+            // Keep localStorage in sync immediately
+            localStorage.setItem('mastery_career_profile', JSON.stringify(careerProfile));
+
+            // Async save to robust DB
+            const saveToDB = async () => {
+                try {
+                    const { saveCareerProfile, initDefaultUser } = await import('../services/db');
+                    let userId = localStorage.getItem('mastery_userid');
+                    if (!userId) {
+                        userId = await initDefaultUser();
+                        localStorage.setItem('mastery_userid', userId.toString());
+                    }
+
+                    await saveCareerProfile(parseInt(userId), {
+                        targetRole: careerProfile.targetRole,
+                        readinessScore: careerProfile.readinessScore,
+                        data: careerProfile,
+                        updatedAt: new Date()
+                    });
+                } catch (err) {
+                    console.error("Failed to save to DB:", err);
+                }
+            };
+            saveToDB();
+        }
+    }, [careerProfile]);
+
     // Form State
     const [formData, setFormData] = useState({
         experience: '2-4 years',
@@ -69,7 +123,6 @@ const CareerPage = () => {
                 sprint: aiData.sprint || []
             };
 
-            localStorage.setItem('mastery_career_profile', JSON.stringify(profile));
             setCareerProfile(profile);
         } catch (error) {
             console.error("Analysis Failed", error);

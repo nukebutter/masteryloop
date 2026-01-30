@@ -25,7 +25,6 @@ const SetupPage = () => {
             question: "What is your primary study goal?",
             options: [
                 { id: 'exam', label: 'University Exam Prep', icon: BookOpen, desc: "Focus on semester exams and syllabus-based mastery." },
-                { id: 'mastery', label: 'Deep Concept Mastery', icon: Brain, desc: "Build intuition-first understanding with no shortcuts." },
                 { id: 'gate', label: 'GATE / Competitive', icon: Trophy, desc: "Train with exam patterns, accuracy goals, and ranks." },
                 { id: 'job', label: 'Job Interview Prep', icon: Briefcase, desc: "Prepare for interviews with real-world problems." }
             ]
@@ -101,17 +100,45 @@ const SetupPage = () => {
 
     useEffect(() => {
         if (step === 'processing') {
+            // Save to LocalStorage (Legacy/Backup)
             localStorage.setItem('mastery_setup_complete', 'true');
             if (answers.goal) localStorage.setItem('mastery_goal', answers.goal);
             if (answers.subject) localStorage.setItem('mastery_subject', answers.subject);
             localStorage.setItem('mastery_level', answers.level);
+
+            // Save to New Database
+            const saveToDB = async () => {
+                try {
+                    const { db } = await import('../services/db');
+
+                    // Create or update user profile
+                    const userId = await db.users.add({
+                        goal: answers.goal,
+                        subject: answers.subject || selectedPath,
+                        level: answers.level,
+                        dailyTime: answers.time,
+                        learningStyle: answers.preference,
+                        createdAt: new Date(),
+                        lastLogin: new Date()
+                    });
+
+                    // Store userId for session
+                    localStorage.setItem('mastery_userid', userId.toString());
+                    console.log("User profile saved to database with ID:", userId);
+                } catch (error) {
+                    console.error("Database save failed:", error);
+                    // Fallback is already handled by localStorage above
+                }
+            };
+
+            saveToDB();
 
             const timer = setTimeout(() => {
                 navigate('/');
             }, 3000);
             return () => clearTimeout(timer);
         }
-    }, [step, answers, navigate]);
+    }, [step, answers, navigate, selectedPath]);
 
     // 1. Learning Mode Selection Screen (Replaces old Path Selection)
     if (step === 'selection') {
@@ -125,16 +152,6 @@ const SetupPage = () => {
                 border: "group-hover:border-amber-400",
                 description: "Structured syllabus-based learning with adaptive revision and exams.",
                 aiFeatures: ["Syllabus breakdown", "Exam-focused scheduling", "Concept mastery tracking"]
-            },
-            {
-                id: 'mastery', // New mode added
-                title: "Deep Concept Mastery",
-                icon: Brain,
-                gradient: "from-blue-100 to-blue-50",
-                accent: "text-blue-600",
-                border: "group-hover:border-blue-400",
-                description: "Intuition-first learning with deep explanations and mastery loops.",
-                aiFeatures: ["Longer explanations", "Fewer but deeper problems", "Mastery-gated progress"]
             },
             {
                 id: 'competitive',
@@ -177,7 +194,7 @@ const SetupPage = () => {
                     </div>
 
                     {/* Mode Selection Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 max-w-5xl mx-auto">
                         {learningModes.map((mode) => {
                             const isSelected = selectedPath === mode.id;
                             const Icon = mode.icon;
@@ -186,37 +203,37 @@ const SetupPage = () => {
                                 <div
                                     key={mode.id}
                                     onClick={() => setSelectedPath(mode.id)}
-                                    className={`relative rounded-[2rem] p-1 cursor-pointer transition-all duration-300 group ${isSelected ? 'scale-[1.02]' : 'hover:scale-[1.01]'}`}
+                                    className={`relative rounded-2xl p-0.5 cursor-pointer transition-all duration-300 group ${isSelected ? 'scale-[1.02]' : 'hover:scale-[1.01]'}`}
                                 >
                                     {/* Selection Glow/Border */}
-                                    <div className={`absolute inset-0 rounded-[2rem] transition-all duration-300 ${isSelected ? 'bg-gradient-to-br ' + mode.gradient.replace('100', '400').replace('50', '300') : 'bg-transparent'}`} />
+                                    <div className={`absolute inset-0 rounded-2xl transition-all duration-300 ${isSelected ? 'bg-gradient-to-br ' + mode.gradient.replace('100', '400').replace('50', '300') : 'bg-transparent'}`} />
 
-                                    <div className={`relative h-full bg-white rounded-[1.8rem] p-6 border-2 transition-all duration-300 ${isSelected ? 'border-transparent shadow-xl' : 'border-slate-100 shadow-sm hover:border-slate-200 hover:shadow-md'} flex flex-col`}>
+                                    <div className={`relative h-full bg-white rounded-2xl p-4 border transition-all duration-300 ${isSelected ? 'border-transparent shadow-lg' : 'border-slate-100 shadow-sm hover:border-slate-200 hover:shadow-md'} flex flex-col`}>
 
                                         {/* Card Header */}
-                                        <div className="flex items-start justify-between mb-4">
-                                            <div className={`p-3 rounded-2xl bg-gradient-to-br ${mode.gradient} ${mode.accent}`}>
-                                                <Icon className="w-8 h-8" />
+                                        <div className="flex items-center justify-between mb-3">
+                                            <div className={`p-2 rounded-xl bg-gradient-to-br ${mode.gradient} ${mode.accent}`}>
+                                                <Icon className="w-5 h-5" />
                                             </div>
-                                            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${isSelected ? `border-${mode.accent.split('-')[1]}-500 bg-${mode.accent.split('-')[1]}-500 text-white` : 'border-slate-200'}`}>
-                                                {isSelected && <CheckCircle className="w-3.5 h-3.5" />}
+                                            <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${isSelected ? `border-${mode.accent.split('-')[1]}-500 bg-${mode.accent.split('-')[1]}-500 text-white` : 'border-slate-200'}`}>
+                                                {isSelected && <CheckCircle className="w-3 h-3" />}
                                             </div>
                                         </div>
 
-                                        <h3 className="text-xl font-extrabold text-[#1F1F1F] mb-2">{mode.title}</h3>
-                                        <p className="text-slate-500 font-medium text-sm leading-relaxed mb-6">
+                                        <h3 className="text-lg font-bold text-[#1F1F1F] mb-1 leading-tight">{mode.title}</h3>
+                                        <p className="text-slate-500 font-medium text-xs leading-relaxed mb-4 line-clamp-2">
                                             {mode.description}
                                         </p>
 
                                         {/* AI Preview Section */}
-                                        <div className="mt-auto bg-slate-50 rounded-xl p-4 border border-slate-100">
-                                            <div className="flex items-center gap-2 mb-3">
-                                                <Brain className="w-3 h-3 text-[#1F1F1F]" />
-                                                <span className="text-[10px] font-extrabold text-[#1F1F1F]/60 uppercase tracking-widest">AI Adaptation Preview</span>
+                                        <div className="mt-auto bg-slate-50/50 rounded-lg p-3 border border-slate-100">
+                                            <div className="flex items-center gap-1.5 mb-2">
+                                                <Brain className="w-2.5 h-2.5 text-[#1F1F1F]" />
+                                                <span className="text-[9px] font-bold text-[#1F1F1F]/50 uppercase tracking-wider">AI Preview</span>
                                             </div>
-                                            <ul className="space-y-2">
+                                            <ul className="space-y-1">
                                                 {mode.aiFeatures.map((feature, i) => (
-                                                    <li key={i} className="flex items-center gap-2 text-xs font-semibold text-slate-600">
+                                                    <li key={i} className="flex items-center gap-1.5 text-[10px] font-medium text-slate-600">
                                                         <span className={`w-1 h-1 rounded-full ${mode.accent.replace('text', 'bg')}`}></span>
                                                         {feature}
                                                     </li>
